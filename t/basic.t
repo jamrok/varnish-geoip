@@ -9,9 +9,10 @@ require test;
 
 my @ip = (
     [ '213.236.208.22' => 'NO' => 'Oslo' ],
-    [ '85.34.205.51'   => 'IT' => 'Cividale Del Friuli' ],
+    [ '173.203.44.122' => 'US' => 'San Antonio' ],
+    [ '37.202.6.117' => 'DE' => 'Mittwald' ],
     # Test an undefined case. Country should be "A6"
-    [ '172.0.0.0'      => 'A6' => '' ],
+    [ '172.16.0.0'      => 'A6' => '' ],
 );
 
 Test::More::plan(tests => 1 + (2 * @ip));

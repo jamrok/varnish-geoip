@@ -4,6 +4,9 @@ DEBUG=
 
 all: geoip geoip.vcl
 
+clean:
+	rm -rf geoip geoip.vcl
+
 geoip: geoip.c
 	$(CC) -Wall -Wno-unused -pedantic $(DEBUG) -o geoip geoip.c -lGeoIP
 

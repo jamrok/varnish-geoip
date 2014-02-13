@@ -112,13 +112,25 @@ void vcl_geoip_send_synthetic(const struct sess *sp) {
 /* Sets "X-Geo-IP" header with the geoip resolved information */
 void vcl_geoip_set_header(const struct sess *sp) {
     vcl_string hval[HEADER_MAXLEN];
+
+    // Store the forwarded IP if the X-Forwarded-For header is set
+    // Needed when behind load balancers or proxy servers
+    vcl_string *ip_fw = VRT_GetHdr(sp, HDR_REQ, "\020X-Forwarded-For:");
+
+    // Store the Client IP (when not behind a load balancer)
     vcl_string *ip = VRT_IP_string(sp, VRT_r_client_ip(sp));
+
+    // If forwarded IP is present, use it
+    if (ip_fw != NULL) {
+      ip = ip_fw;
+    }
+
     if (geoip_lookup(ip, hval)) {
         VRT_SetHdr(sp, HDR_REQ, "\011X-Geo-IP:", hval, vrt_magic_string_end);
     }
     else {
         /* Send an empty header */
-        VRT_SetHdr(sp, HDR_REQ, "\011X-Geo-IP:", "", vrt_magic_string_end);
+        VRT_SetHdr(sp, HDR_REQ, "\011X-Geo-IP:", "IP Not found", vrt_magic_string_end);
     }
 }
 
@@ -138,7 +150,7 @@ void vcl_geoip_country_set_header_xff(const struct sess *sp) {
         geoip_lookup_country(ip, hval);
         VRT_SetHdr(sp, HDR_REQ, "\011X-Geo-IP:", hval, vrt_magic_string_end);
     } else {
-        VCL_Log("geoip: no ip from X-Forwarded-For");
+        /* VCL_Log("geoip: no ip from X-Forwarded-For"); */
         VRT_SetHdr(sp, HDR_REQ, "\011X-Geo-IP:", "", vrt_magic_string_end);
     }
 }
